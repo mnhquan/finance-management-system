@@ -1,14 +1,9 @@
 package model;
 
 public enum Category {
-    FOOD,
-    TRANSPORT,
-    EDUCATION,
-    ENTERTAINMENT,
-    SHOPPING,
-    HEALTH,
-    BILLS,
-    SALARY,
-    BONUS,
-    OTHER
+    // Thu nhập
+    SALARY, FREELANCE, INVESTMENT, OTHER_INCOME,
+    // Chi tiêu
+    FOOD, TRANSPORT, HOUSING, ENTERTAINMENT,
+    HEALTHCARE, EDUCATION, SHOPPING, OTHER_EXPENSE
 }

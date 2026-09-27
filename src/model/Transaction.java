@@ -3,12 +3,20 @@ package model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public class Transaction {
+public abstract class Transaction {
     private long id;
     private BigDecimal amount;
     private String description;
     private LocalDate date;
     private Category category;
+
+    public Transaction(long id, BigDecimal amount, String description, LocalDate date, Category category) {
+        this.id = id;
+        this.amount = amount;
+        this.description = description;
+        this.date = date;
+        this.category = category;
+    }
 
     public long getId() {
         return id;
@@ -49,4 +57,6 @@ public class Transaction {
     public void setCategory(Category category) {
         this.category = category;
     }
+
+    public abstract TransactionType getType();
 }
