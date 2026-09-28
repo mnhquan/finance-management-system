@@ -131,7 +131,7 @@ public class ConsoleUI {
     private void updateTransaction() {
         System.out.println("====== UPDATE TRANSACTION ======\n");
         System.out.println("Enter ID: ");
-        long inputId = inputReader.readInt();
+        long inputId = inputReader.readLong();
 
         Transaction transaction;
         try {
@@ -165,14 +165,14 @@ public class ConsoleUI {
     }
 
     private void deleteTransaction() {
-        System.out.println("====== UPDATE TRANSACTION ======\n");
+        System.out.println("====== DELETE TRANSACTION ======\n");
         System.out.println("Enter ID: ");
-        long inputId = inputReader.readInt();
+        long inputId = inputReader.readLong();
 
         System.out.println("Are you sure?");
         System.out.println("1. Yes - 2. No");
-
         String decision = inputReader.readString();
+
         if (decision.equals("1")) {
             try {
                 service.delete(inputId);
@@ -192,7 +192,14 @@ public class ConsoleUI {
         System.out.println("Enter ID: ");
         long inputId = inputReader.readInt();
 
-        Transaction transaction = service.getById(inputId);
+        Transaction transaction;
+        try {
+            transaction = service.getById(inputId);
+        } catch (TransactionNotFoundException e) {
+            System.out.println(e.getMessage());
+            return;
+        }
+
         System.out.printf("%-5d | %-8s | %-12.2f | %-15s | %-12s | %s%n",
                 transaction.getId(),
                 transaction.getType(),
@@ -204,7 +211,35 @@ public class ConsoleUI {
     }
 
     private void showStatistic() {
-        System.out.println("Show statistics");
+        System.out.println("====== SHOW STATISTICS ======\n");
+        System.out.println("1. Total income\n"
+                + "2. Total expense\n"
+                + "3. Balance\n");
+
+        switch (readStatisticChoice()) {
+            case 1:
+                System.out.println("Your total income: " + service.getTotalIncome());
+                break;
+            case 2:
+                System.out.println("Your total expense: " + service.getTotalExpense());
+                break;
+            case 3:
+                System.out.println("Your balance: " + service.getBalance());
+                break;
+            default:
+                System.out.println("Invalid option. Please try again");
+                break;
+        }
     }
 
+    private int readStatisticChoice() {
+        while (true) {
+            System.out.println("Choose an option:");
+            int choice = inputReader.readInt();
+            if (choice >= 1 && choice <= 3) {
+                return choice;
+            }
+            System.out.println("Invalid choice. Please try again");
+        }
+    }
 }

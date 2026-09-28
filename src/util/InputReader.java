@@ -27,6 +27,18 @@ public class InputReader {
         }
     }
 
+    public long readLong() {
+        while (true) {
+            String input = scanner.nextLine();
+
+            try {
+                return Long.parseLong(input);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid number. Please try again");
+            }
+        }
+    }
+
     public BigDecimal readBigDecimal() {
         while (true) {
             String input = scanner.nextLine();
