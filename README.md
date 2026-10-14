@@ -1,117 +1,153 @@
-# 💰 Personal Finance Management System
+# Personal Finance Management System
 
-Ứng dụng console Java giúp quản lý thu nhập và chi tiêu cá nhân, hỗ trợ đầy đủ các thao tác CRUD và thống kê tài chính, được xây dựng theo mô hình **Layered Architecture**.
-
----
-
-## 🚀 Tính năng
-
-| Chức năng | Mô tả |
-|---|---|
-| ➕ Thêm thu nhập | Nhập số tiền, mô tả, ngày, danh mục |
-| ➕ Thêm chi tiêu | Nhập số tiền, mô tả, ngày, danh mục |
-| 📋 Xem tất cả giao dịch | Hiển thị danh sách dạng bảng |
-| 🔍 Tìm giao dịch theo ID | Tra cứu nhanh một giao dịch |
-| ✏️ Sửa giao dịch | Cập nhật thông tin giao dịch đã có |
-| 🗑️ Xóa giao dịch | Xóa với xác nhận trước khi thực hiện |
-| 📊 Thống kê tài chính | Tổng thu nhập, tổng chi tiêu, số dư ví |
+Ứng dụng quản lý thu chi và thống kê tài chính cá nhân trên giao diện dòng lệnh (CLI), được phát triển bằng **Java 25** và áp dụng kiến trúc phân tầng (**Layered Architecture**) kết hợp **Repository Pattern**.
 
 ---
 
-## 🗂️ Cấu trúc dự án
+## Mục lục
 
-```
-src/
-├── Main.java                               # Entry point
-├── model/
-│   ├── Transaction.java                    # Abstract base class
-│   ├── Income.java                         # Giao dịch thu nhập
-│   ├── Expense.java                        # Giao dịch chi tiêu
-│   ├── Category.java                       # Enum danh mục
-│   └── TransactionType.java                # Enum loại giao dịch (INCOME/EXPENSE)
-├── repository/
-│   ├── TransactionRepository.java          # Interface định nghĩa các thao tác dữ liệu
-│   ├── InMemoryTransactionRepository.java  # Lưu trữ trong RAM
-│   └── PostgreSQLTransactionRepository.java# Lưu trữ trong PostgreSQL (mở rộng)
-├── service/
-│   └── TransactionService.java             # Business logic
-├── ui/
-│   ├── ConsoleUI.java                      # Giao diện người dùng dòng lệnh
-│   └── Menu.java                           # Hiển thị menu
-├── util/
-│   ├── DatabaseConnection.java             # Kết nối PostgreSQL
-│   └── InputReader.java                    # Đọc và validate input từ người dùng
-└── exception/
-    └── TransactionNotFoundException.java   # Custom exception
-```
+- [Tính năng chính](#tính-năng-chính)
+- [Kiến trúc hệ thống](#kiến-trúc-hệ-thống)
+- [Công nghệ sử dụng](#công-nghệ-sử-dụng)
+- [Cấu trúc thư mục](#cấu-trúc-thư-mục)
+- [Yêu cầu hệ thống](#yêu-cầu-hệ-thống)
+- [Hướng dẫn cài đặt & Khởi chạy](#hướng-dẫn-cài-đặt--khởi-chạy)
+  - [Chế độ In-Memory (Mặc định)](#1-chế-độ-in-memory-không-cần-database)
+  - [Chế độ PostgreSQL](#2-chế-độ-postgresql-lưu-trữ-bền-vững)
 
 ---
 
-## 🏗️ Kiến trúc
+## Tính năng chính
 
-Dự án áp dụng **Layered Architecture** (Kiến trúc phân tầng):
+- **Quản lý giao dịch (CRUD):** Hỗ trợ thêm mới, xem danh sách dạng bảng, tra cứu theo ID, cập nhật và xóa các khoản thu/chi.
+- **Phân loại giao dịch:** Phân loại minh bạch giữa thu nhập (`INCOME`) và chi tiêu (`EXPENSE`) với hệ thống danh mục định sẵn (`Salary`, `Freelance`, `Food`, `Transport`, `Housing`,...).
+- **Thống kê tài chính:** Tự động tổng hợp tổng thu nhập, tổng chi tiêu và số dư ví. Đảm bảo tính toán tài chính chính xác tuyệt đối bằng `BigDecimal`.
+- **Lưu trữ linh hoạt:** Dễ dàng hoán đổi giữa lưu trữ tạm thời trên RAM hoặc lưu trữ lâu dài trên PostgreSQL mà không ảnh hưởng đến logic nghiệp vụ.
+
+---
+
+## Kiến trúc hệ thống
+
+Hệ thống được thiết kế theo **Layered Architecture** nhằm đảm bảo tính độc lập, dễ bảo trì và mở rộng:
 
 ```
 ┌─────────────────────────────┐
-│          UI Layer           │  ConsoleUI — nhận input, hiển thị output
+│          UI Layer           │  ConsoleUI, Menu — Điều hướng và tương tác người dùng
 ├─────────────────────────────┤
-│        Service Layer        │  TransactionService — xử lý business logic
+│        Service Layer        │  TransactionService — Xử lý business logic, tính toán số dư
 ├─────────────────────────────┤
-│       Repository Layer      │  TransactionRepository — truy cập dữ liệu
+│       Repository Layer      │  TransactionRepository (Interface)
+│                             │  ├── InMemoryTransactionRepository (Bộ nhớ RAM)
+│                             │  └── PostgreSQLTransactionRepository (Cơ sở dữ liệu)
 ├─────────────────────────────┤
-│         Model Layer         │  Transaction, Income, Expense, Category
+│         Model Layer         │  Transaction, Income, Expense, Category, TransactionType
 └─────────────────────────────┘
 ```
 
-**Repository Pattern** được áp dụng: `TransactionRepository` là interface, cho phép dễ dàng đổi giữa `InMemoryTransactionRepository` và `PostgreSQLTransactionRepository` mà không ảnh hưởng đến các tầng trên.
+### Nguyên lý thiết kế áp dụng
+- **Repository Pattern:** Tách biệt hoàn toàn tầng truy xuất dữ liệu khỏi tầng logic nghiệp vụ.
+- **Object-Oriented Programming (OOP):** Kế thừa và đa hình được thể hiện qua lớp trừu tượng `Transaction` cùng các lớp kế thừa `Income` và `Expense`.
+- **Defensive Programming & Exception Handling:** Quản lý luồng xử lý lỗi tập trung thông qua `TransactionNotFoundException`.
 
 ---
 
-## 📦 Danh mục giao dịch
+## Công nghệ sử dụng
 
-**Thu nhập:**
-`SALARY` · `FREELANCE` · `INVESTMENT` · `OTHER_INCOME`
-
-**Chi tiêu:**
-`FOOD` · `TRANSPORT` · `HOUSING` · `ENTERTAINMENT` · `HEALTHCARE` · `EDUCATION` · `SHOPPING` · `OTHER_EXPENSE`
-
----
-
-## ⚙️ Yêu cầu hệ thống
-
-- **Java** JDK 17 trở lên
-- **PostgreSQL** 14+
+- **Ngôn ngữ:** Java 25 (Implicitly Declared Classes, Stream API, `BigDecimal`)
+- **Cơ sở dữ liệu:** PostgreSQL 14+
+- **Thư viện kết nối:** JDBC thuần với `PreparedStatement` (phòng chống SQL Injection)
+- **Driver:** PostgreSQL JDBC Driver (`postgresql-42.7.13.jar`)
 
 ---
 
-## ▶️ Cách chạy
+## Cấu trúc thư mục
 
-### Chế độ In-Memory *(mặc định, không cần database)*
+```
+src/
+├── Main.java                               # Điểm khởi chạy ứng dụng (Entry point)
+├── model/
+│   ├── Transaction.java                    # Abstract class định nghĩa cấu trúc giao dịch
+│   ├── Income.java                         # Model giao dịch thu nhập
+│   ├── Expense.java                        # Model giao dịch chi tiêu
+│   ├── Category.java                       # Enum danh mục giao dịch
+│   └── TransactionType.java                # Enum phân loại loại giao dịch
+├── repository/
+│   ├── TransactionRepository.java          # Interface định nghĩa các thao tác dữ liệu
+│   ├── InMemoryTransactionRepository.java  # Triển khai lưu trữ tạm thời trên RAM
+│   └── PostgreSQLTransactionRepository.java# Triển khai lưu trữ trên PostgreSQL
+├── service/
+│   └── TransactionService.java             # Xử lý business logic và tính toán số dư
+├── ui/
+│   ├── ConsoleUI.java                      # Điều hướng và hiển thị CLI
+│   └── Menu.java                           # Menu tương tác người dùng
+├── util/
+│   ├── DatabaseConnection.java             # Quản lý kết nối cơ sở dữ liệu
+│   └── InputReader.java                    # Đọc và xác thực dữ liệu đầu vào
+└── exception/
+    └── TransactionNotFoundException.java   # Custom Exception xử lý ngoại lệ nghiệp vụ
+```
+
+---
+
+## Yêu cầu hệ thống
+
+- **JDK:** Java 25 (hoặc Java 21 trở lên với cờ preview `--enable-preview`)
+- **PostgreSQL:** Phiên bản 14 trở lên (nếu sử dụng chế độ cơ sở dữ liệu)
+- **IDE:** IntelliJ IDEA hoặc VS Code hỗ trợ JDK 25
+
+---
+
+## Hướng dẫn cài đặt & Khởi chạy
+
+### 1. Chế độ In-Memory (Không cần Database)
+
+Phù hợp để thử nghiệm nhanh mà không cần cài đặt PostgreSQL. Dữ liệu được lưu trong RAM và giải phóng khi ứng dụng dừng.
 
 1. Clone repository:
    ```bash
-   git clone https://github.com/your-username/finance-management-system.git
+   git clone https://github.com/mnhquan/finance-management-system.git
+   ```
+2. Mở dự án trong IDE và chọn Project SDK là **Java 25**.
+3. Trong file `src/Main.java`, cấu hình repository:
+   ```java
+   TransactionRepository repository = new InMemoryTransactionRepository();
+   ```
+4. Thực thi `src/Main.java`.
+
+---
+
+### 2. Chế độ PostgreSQL (Lưu trữ bền vững)
+
+1. **Khởi tạo cơ sở dữ liệu:**
+   Đăng nhập vào PostgreSQL và chạy đoạn mã DDL sau để tạo cơ sở dữ liệu và bảng:
+
+   ```sql
+   CREATE DATABASE finance_db;
+
+   \c finance_db;
+
+   CREATE TABLE IF NOT EXISTS transactions (
+       id BIGSERIAL PRIMARY KEY,
+       type VARCHAR(10) NOT NULL,
+       amount NUMERIC(15, 2) NOT NULL,
+       description TEXT,
+       date DATE NOT NULL,
+       category VARCHAR(50) NOT NULL
+   );
    ```
 
-2. Mở project bằng IntelliJ IDEA hoặc VS Code
+2. **Cấu hình kết nối:**
+   Cập nhật thông tin tài khoản cơ sở dữ liệu trong [src/util/DatabaseConnection.java](src/util/DatabaseConnection.java):
+   ```java
+   private static final String URL = "jdbc:postgresql://localhost:5432/finance_db";
+   private static final String USER = "postgres";
+   private static final String PASSWORD = "your_password";
+   ```
 
-3. Biên dịch và chạy file `Main.java`
+3. **Kích hoạt Repository:**
+   Trong file `src/Main.java`, chuyển sang sử dụng `PostgreSQLTransactionRepository`:
+   ```java
+   TransactionRepository repository = new PostgreSQLTransactionRepository();
+   ```
 
-> Dữ liệu lưu trong RAM — sẽ mất khi tắt chương trình.
-
----
-
-### Chế độ PostgreSQL *(lưu dữ liệu lâu dài)*
-
-Project hỗ trợ lưu trữ dữ liệu bằng PostgreSQL thông qua `PostgreSQLTransactionRepository`. Để kích hoạt, tạo database `finance_db`, cấu hình thông tin kết nối trong `DatabaseConnection.java`, và đổi repository trong `Main.java`.
-
----
-
-## 🛠️ Công nghệ sử dụng
-
-- **Java** — ngôn ngữ lập trình chính
-- **OOP** — kế thừa, trừu tượng hóa, đa hình
-- **Collections Framework** — `ArrayList`, `Optional`, `Stream API`
-- **Repository Pattern** — tách biệt logic truy cập dữ liệu
-- **Custom Exception** — xử lý lỗi nghiệp vụ rõ ràng
-- **PostgreSQL + JDBC** — lưu trữ dữ liệu bền vững với `PreparedStatement`
+4. Chạy `src/Main.java` để bắt đầu sử dụng.
