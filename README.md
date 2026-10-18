@@ -1,6 +1,6 @@
 # Personal Finance Management System
 
-Ứng dụng quản lý thu chi và thống kê tài chính cá nhân trên giao diện dòng lệnh (CLI), được phát triển bằng **Java 25** và áp dụng kiến trúc phân tầng (**Layered Architecture**) kết hợp **Repository Pattern**.
+Ứng dụng quản lý thu chi và thống kê tài chính cá nhân trên giao diện dòng lệnh (CLI), được phát triển bằng **Java 21** và áp dụng kiến trúc phân tầng (**Layered Architecture**) kết hợp **Repository Pattern**.
 
 ---
 
@@ -53,7 +53,7 @@ Hệ thống được thiết kế theo **Layered Architecture** nhằm đảm b
 
 ## Công nghệ sử dụng
 
-- **Ngôn ngữ:** Java 25 (Implicitly Declared Classes, Stream API, `BigDecimal`)
+- **Ngôn ngữ:** Java 21 (Implicitly Declared Classes, Stream API, `BigDecimal`)
 - **Cơ sở dữ liệu:** PostgreSQL 14+
 - **Thư viện kết nối:** JDBC thuần với `PreparedStatement` (phòng chống SQL Injection)
 - **Driver:** PostgreSQL JDBC Driver (`postgresql-42.7.13.jar`)
@@ -91,7 +91,7 @@ src/
 
 ## Yêu cầu hệ thống
 
-- **JDK:** Java 25 (hoặc Java 21 trở lên với cờ preview `--enable-preview`)
+- **JDK:** Java 21
 - **PostgreSQL:** Phiên bản 14 trở lên (nếu sử dụng chế độ cơ sở dữ liệu)
 - **IDE:** IntelliJ IDEA hoặc VS Code hỗ trợ JDK 25
 
